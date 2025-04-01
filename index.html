@@ -687,47 +687,83 @@
 
       function checkLines() {
         let linesCleared = 0;
+
         for (let y = 0; y < GRID_HEIGHT; y++) {
           let fullLine = true;
+
           for (let x = 0; x < GRID_WIDTH; x++) {
             for (let z = 0; z < GRID_DEPTH; z++) {
               if (grid[x][y][z] === null) {
+                // Se encontrar um espaço vazio, a linha não está completa
                 fullLine = false;
                 break;
               }
             }
             if (!fullLine) break;
           }
+
           if (fullLine) {
+            linesCleared++;
+
+            // Remove os blocos da linha
             for (let x = 0; x < GRID_WIDTH; x++) {
               for (let z = 0; z < GRID_DEPTH; z++) {
-                scene.remove(grid[x][y][z].mesh);
-                grid[x][y][z] = null;
+                grid[x][y][z] = null; // Remove a linha
               }
             }
-            for (let y2 = y; y2 < GRID_HEIGHT - 1; y2++) {
+
+            // Move todas as linhas acima para baixo
+            for (let yy = y; yy > 0; yy--) {
               for (let x = 0; x < GRID_WIDTH; x++) {
                 for (let z = 0; z < GRID_DEPTH; z++) {
-                  grid[x][y2][z] = grid[x][y2 + 1][z];
-                  if (grid[x][y2][z] !== null) {
-                    grid[x][y2][z].mesh.position.y -= 1;
-                  }
+                  grid[x][yy][z] = grid[x][yy - 1][z]; // Move os blocos acima para baixo
                 }
               }
             }
-            for (let x = 0; x < GRID_WIDTH; x++) {
-              for (let z = 0; z < GRID_DEPTH; z++) {
-                grid[x][GRID_HEIGHT - 1][z] = null;
-              }
-            }
-            linesCleared++;
-            y--;
+
             playLineClearAnimation(y);
           }
         }
+
         if (linesCleared > 0) {
           updateScore(linesCleared);
         }
+      }
+
+      function updateScore(linesCleared) {
+        let pointsEarned = 0;
+
+        switch (linesCleared) {
+          case 1:
+            pointsEarned = 100 * level;
+            break;
+          case 2:
+            pointsEarned = 300 * level;
+            break;
+          case 3:
+            pointsEarned = 500 * level;
+            break;
+          case 4:
+            pointsEarned = 800 * level;
+            break;
+          default:
+            pointsEarned = 1000 * level;
+        }
+
+        score += pointsEarned;
+        lines += linesCleared;
+
+        // Atualiza o nível a cada 10 linhas removidas
+        const newLevel = Math.floor(lines / 10) + 1;
+        if (newLevel > level) {
+          level = newLevel;
+          moveInterval = Math.max(100, 1000 - (level - 1) * 100);
+        }
+
+        // Atualiza a interface
+        document.getElementById("score-value").textContent = score;
+        document.getElementById("level-value").textContent = level;
+        document.getElementById("lines-value").textContent = lines;
       }
 
       function playLineClearAnimation(lineY) {
@@ -753,36 +789,6 @@
             flashMaterial.opacity = opacity;
           }
         }, 30);
-      }
-
-      function updateScore(linesCleared) {
-        let pointsEarned = 0;
-        switch (linesCleared) {
-          case 1:
-            pointsEarned = 100 * level;
-            break;
-          case 2:
-            pointsEarned = 300 * level;
-            break;
-          case 3:
-            pointsEarned = 500 * level;
-            break;
-          case 4:
-            pointsEarned = 800 * level;
-            break;
-          default:
-            pointsEarned = 1000 * level;
-        }
-        score += pointsEarned;
-        lines += linesCleared;
-        const newLevel = Math.floor(lines / 10) + 1;
-        if (newLevel > level) {
-          level = newLevel;
-          moveInterval = Math.max(100, 1000 - (level - 1) * 100);
-        }
-        document.getElementById("score-value").textContent = score;
-        document.getElementById("level-value").textContent = level;
-        document.getElementById("lines-value").textContent = lines;
       }
 
       function clearBoard() {
