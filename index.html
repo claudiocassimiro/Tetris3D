@@ -426,6 +426,7 @@
           shininess: 30,
           specular: 0x333333,
         });
+        piece.mesh.isPiece = true; // Adicionar propriedade para identificar peças
         piece.blocks.forEach((block) => {
           const geometry = new THREE.BoxGeometry(
             CELL_SIZE,
@@ -433,6 +434,7 @@
             CELL_SIZE
           );
           const cube = new THREE.Mesh(geometry, material);
+          cube.isPiece = true; // Marcar cada cubo como peça
           cube.position.set(block.x, block.y, block.z);
           const edgesGeometry = new THREE.EdgesGeometry(geometry);
           const edgesMaterial = new THREE.LineBasicMaterial({
@@ -559,6 +561,7 @@
           shininess: 30,
           specular: 0x333333,
         });
+        currentPiece.mesh.isPiece = true; // Marcar o novo grupo como peça
         currentPiece.blocks.forEach((block) => {
           const geometry = new THREE.BoxGeometry(
             CELL_SIZE,
@@ -566,6 +569,7 @@
             CELL_SIZE
           );
           const cube = new THREE.Mesh(geometry, material);
+          cube.isPiece = true; // Marcar cada cubo como peça
           cube.position.set(block.x, block.y, block.z);
           const edgesGeometry = new THREE.EdgesGeometry(geometry);
           const edgesMaterial = new THREE.LineBasicMaterial({
@@ -585,6 +589,7 @@
           currentPiece.blocks = originalBlocks;
           scene.remove(currentPiece.mesh);
           currentPiece.mesh = new THREE.Group();
+          currentPiece.mesh.isPiece = true; // Marcar o grupo restaurado
           currentPiece.blocks.forEach((block) => {
             const geometry = new THREE.BoxGeometry(
               CELL_SIZE,
@@ -592,6 +597,7 @@
               CELL_SIZE
             );
             const cube = new THREE.Mesh(geometry, material);
+            cube.isPiece = true; // Marcar cada cubo restaurado
             cube.position.set(block.x, block.y, block.z);
             const edgesGeometry = new THREE.EdgesGeometry(geometry);
             const edgesMaterial = new THREE.LineBasicMaterial({
@@ -645,7 +651,8 @@
           const worldX = currentPiece.position.x + block.x;
           const worldY = currentPiece.position.y + block.y;
           const worldZ = currentPiece.position.z + block.z;
-          if (worldY >= GRID_HEIGHT - 1) {
+          if (worldY >= GRID_HEIGHT) {
+            // Ajustado para GRID_HEIGHT
             endGame();
             return;
           }
@@ -664,6 +671,7 @@
             specular: 0x333333,
           });
           const cube = new THREE.Mesh(geometry, material);
+          cube.isPiece = true; // Marcar cubos fixos como peças
           const edgesGeometry = new THREE.EdgesGeometry(geometry);
           const edgesMaterial = new THREE.LineBasicMaterial({
             color: 0x000000,
@@ -777,6 +785,10 @@
         document.getElementById("lines-value").textContent = lines;
       }
 
+      function clearBoard() {
+        window.location.reload(true);
+      }
+
       function endGame() {
         gameOver = true;
         document.getElementById(
@@ -792,11 +804,7 @@
         gameOver = false;
         isPaused = false;
         grid = createEmptyGrid();
-        scene.children.forEach((child) => {
-          if (child instanceof THREE.Mesh && child !== boardLine) {
-            scene.remove(child);
-          }
-        });
+        clearBoard();
         spawnNewPiece();
         lastMoveTime = performance.now();
         document.getElementById("game-over").style.display = "none";
